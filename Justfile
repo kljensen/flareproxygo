@@ -20,6 +20,10 @@ fmt:
 vet:
     go vet ./...
 
+# Run tests
+test:
+    go test -v ./...
+
 # Clean build artifacts
 clean:
     rm -f flareproxygo
