@@ -134,7 +134,7 @@ FlareProxy Go acts as an HTTP proxy that:
 
 ## License
 
-This project maintains the same license as the original FlareProxy project.
+This project is released into the public domain under the Unlicense. See the [LICENSE](LICENSE) file for details.
 
 ## Related Projects
 
