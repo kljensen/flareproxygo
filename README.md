@@ -155,8 +155,6 @@ This project is released into the public domain under the Unlicense. See the [LI
 
 - [FlareSolverr](https://github.com/FlareSolverr/FlareSolverr) - The backend service that bypasses Cloudflare
 - [FlareProxy](https://github.com/mimnix/FlareProxy) - Original Python implementation
-- [changedetection.io](https://github.com/dgtlmoon/changedetection.io) - Website change detection
-- [urlwatch](https://github.com/thp/urlwatch) - URL monitoring tool
 
 ## Contributing
 
