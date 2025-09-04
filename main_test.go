@@ -86,12 +86,12 @@ func TestProxyHandler_ServeHTTP(t *testing.T) {
 	handler := NewProxyHandler()
 
 	tests := []struct {
-		name           string
-		method         string
-		url            string
-		wantStatus     int
-		wantContent    string
-		wantError      bool
+		name        string
+		method      string
+		url         string
+		wantStatus  int
+		wantContent string
+		wantError   bool
 	}{
 		{
 			name:        "successful GET request",
@@ -203,7 +203,7 @@ func TestDirectHandler_ServeHTTP(t *testing.T) {
 		if r.Method != "POST" {
 			t.Errorf("Expected POST request, got %s", r.Method)
 		}
-		
+
 		// Decode the request to verify it's correct
 		var req FlareSolverrRequest
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {

@@ -141,7 +141,7 @@ func (p *ProxyHandler) sendConnectError(w http.ResponseWriter) {
 	message := "CONNECT method is not supported. This is an HTTP-only proxy adapter for FlareSolverr. " +
 		"Please use HTTP URLs (e.g., http://example.com) even for HTTPS sites. " +
 		"The proxy will automatically handle HTTPS conversion when communicating with FlareSolverr."
-	
+
 	log.Printf("CONNECT rejected: %s", message)
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.WriteHeader(http.StatusMethodNotAllowed)
@@ -275,12 +275,12 @@ func main() {
 
 	// Start direct routing server (primary service)
 	directHandler := NewDirectHandler()
-	
+
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
 	}
-	
+
 	directServer := &http.Server{
 		Addr:    ":" + port,
 		Handler: directHandler,
@@ -297,10 +297,10 @@ func main() {
 			Addr:    ":" + proxyPort,
 			Handler: proxyHandler,
 		}
-		
+
 		log.Printf("FlareProxy adapter (proxy mode) running on port %s", proxyPort)
 		log.Printf("Proxy mode usage: Set http://localhost:%s as HTTP proxy", proxyPort)
-		
+
 		// Run proxy server in a goroutine
 		go func() {
 			if err := proxyServer.ListenAndServe(); err != nil {
