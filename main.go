@@ -120,12 +120,18 @@ func (p *ProxyHandler) sendError(w http.ResponseWriter, message string) {
 
 func main() {
 	handler := NewProxyHandler()
+	
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+	
 	server := &http.Server{
-		Addr:    ":8080",
+		Addr:    ":" + port,
 		Handler: handler,
 	}
 
-	log.Printf("FlareProxy adapter running on port 8080")
+	log.Printf("FlareProxy adapter running on port %s", port)
 	log.Printf("FlareSolverr URL: %s", handler.flareSolverrURL)
 
 	if err := server.ListenAndServe(); err != nil {

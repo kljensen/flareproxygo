@@ -24,6 +24,10 @@ vet:
 test:
     go test -v ./...
 
+# Run integration tests (requires Docker)
+test-integration:
+    ./tests/integration/test.sh
+
 # Clean build artifacts
 clean:
     rm -f flareproxygo
@@ -49,9 +53,9 @@ test-curl:
 check: fmt vet build
     @echo "All checks passed!"
 
-# View Docker image size
+# View Docker image size  
 docker-size:
-    docker images flareproxygo --format "table {{.Repository}}\t{{.Tag}}\t{{.Size}}"
+    docker images flareproxygo
 
 # Run go mod tidy
 tidy:
