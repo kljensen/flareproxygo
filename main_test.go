@@ -102,12 +102,12 @@ func TestProxyHandler_ServeHTTP(t *testing.T) {
 			wantError:   false,
 		},
 		{
-			name:        "successful CONNECT request",
+			name:        "CONNECT request rejected",
 			method:      "CONNECT",
 			url:         "example.com:443",
-			wantStatus:  http.StatusOK,
-			wantContent: "<html><body>Test HTML Response</body></html>",
-			wantError:   false,
+			wantStatus:  http.StatusMethodNotAllowed,
+			wantContent: "CONNECT method is not supported",
+			wantError:   true,
 		},
 		{
 			name:        "unsupported method POST",

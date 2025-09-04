@@ -47,11 +47,25 @@ docker run -e FLARESOLVERR_URL=http://localhost:8191/v1 -p 8080:8080 flareproxyg
 
 ## Usage
 
-Set FlareProxy Go as a proxy in your browser or in your agent. Please note: use `http` protocol even if you want to fetch HTTPS resources. FlareProxy Go will automatically switch to the HTTPS protocol when establishing the upstream connection.
+**Important: HTTP-Only Proxy Limitation**
+
+FlareProxy Go is an HTTP-only proxy adapter that does NOT support the CONNECT method used for traditional HTTPS tunneling. This is by design because:
+
+1. FlareSolverr needs to process the actual request content to bypass Cloudflare protection
+2. Standard CONNECT tunneling creates an encrypted tunnel that would prevent FlareSolverr from seeing the request
+3. The proxy automatically converts HTTP requests to HTTPS when communicating with target sites through FlareSolverr
+
+**Always use HTTP URLs in your client configuration**, even when accessing HTTPS sites. The proxy handles the HTTPS conversion internally.
 
 ```bash
+# Correct usage - use http:// URL even for HTTPS sites
 curl --proxy 127.0.0.1:8080 http://www.google.com
+
+# This will NOT work - CONNECT method is not supported
+curl --proxy 127.0.0.1:8080 https://www.google.com
 ```
+
+If your client attempts to use CONNECT for HTTPS sites, you'll receive an error message explaining that this is an HTTP-only proxy.
 
 You can use it as a proxy in [changedetection](https://github.com/dgtlmoon/changedetection.io). Navigate to Settings → CAPTCHA&Proxies and add it as an extra proxy in the list. Then you can set up your watch using any fetch method.
 
@@ -132,12 +146,14 @@ just test
 
 ## Architecture
 
-FlareProxy Go acts as an HTTP proxy that:
-1. Receives HTTP GET/CONNECT requests from clients
-2. Transforms the URL from HTTP to HTTPS if needed
-3. Forwards the request to FlareSolverr API
+FlareProxy Go acts as an HTTP proxy adapter that:
+1. Receives HTTP GET requests from clients (CONNECT is not supported)
+2. Transforms the URL from HTTP to HTTPS for secure communication with target sites
+3. Forwards the request to FlareSolverr API to bypass Cloudflare protection
 4. Extracts the HTML response from FlareSolverr's JSON response
 5. Returns the HTML content to the client
+
+Note: This is not a traditional HTTP proxy that supports CONNECT tunneling. It's specifically designed as an adapter for FlareSolverr, which requires visibility into request content to bypass Cloudflare challenges.
 
 ## Differences from Original Python Implementation
 

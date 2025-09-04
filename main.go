@@ -47,8 +47,13 @@ func NewProxyHandler() *ProxyHandler {
 
 func (p *ProxyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
-	case http.MethodGet, http.MethodConnect:
+	case http.MethodGet:
 		p.handleRequest(w, r)
+	case http.MethodConnect:
+		// CONNECT method is not supported as this is an HTTP-only proxy adapter
+		// that uses FlareSolverr to bypass Cloudflare protection.
+		// Clients should use HTTP URLs even for HTTPS sites.
+		p.sendConnectError(w)
 	default:
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
@@ -56,11 +61,8 @@ func (p *ProxyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func (p *ProxyHandler) handleRequest(w http.ResponseWriter, r *http.Request) {
 	url := r.URL.String()
-	if r.Method == http.MethodConnect {
-		url = "https://" + r.Host + r.URL.Path
-	} else {
-		url = strings.Replace(url, "http://", "https://", 1)
-	}
+	// Convert HTTP to HTTPS for FlareSolverr
+	url = strings.Replace(url, "http://", "https://", 1)
 
 	requestData := FlareSolverrRequest{
 		Cmd:        "request.get",
@@ -116,6 +118,17 @@ func (p *ProxyHandler) sendError(w http.ResponseWriter, message string) {
 	w.WriteHeader(http.StatusInternalServerError)
 	errorResponse := map[string]string{"error": message}
 	json.NewEncoder(w).Encode(errorResponse)
+}
+
+func (p *ProxyHandler) sendConnectError(w http.ResponseWriter) {
+	message := "CONNECT method is not supported. This is an HTTP-only proxy adapter for FlareSolverr. " +
+		"Please use HTTP URLs (e.g., http://example.com) even for HTTPS sites. " +
+		"The proxy will automatically handle HTTPS conversion when communicating with FlareSolverr."
+	
+	log.Printf("CONNECT rejected: %s", message)
+	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	w.WriteHeader(http.StatusMethodNotAllowed)
+	w.Write([]byte(message))
 }
 
 func main() {
