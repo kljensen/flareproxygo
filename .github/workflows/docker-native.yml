@@ -3,14 +3,8 @@ name: Docker Native Multi-Arch Build
 on:
   workflow_dispatch:
   push:
-    branches:
-      - main
-      - 'feature/**'
     tags:
-      - 'v*'
-  pull_request:
-    branches:
-      - main
+      - 'v*.*.*'  # Only trigger on semver tags like v1.2.3
 
 env:
   REGISTRY: ghcr.io
@@ -61,12 +55,10 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=ref,event=branch
-            type=ref,event=pr
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
             type=semver,pattern={{major}}
-            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=latest
 
       - name: Build and push by architecture
         uses: docker/build-push-action@v5
@@ -106,12 +98,10 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=ref,event=branch
-            type=ref,event=pr
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
             type=semver,pattern={{major}}
-            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=latest
 
       - name: Create and push multi-arch manifest
         run: |

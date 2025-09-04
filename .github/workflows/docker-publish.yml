@@ -1,9 +1,10 @@
 name: Build and Publish Docker Image
 
 on:
+  workflow_dispatch:  # Allow manual triggering
   push:
     tags:
-      - 'v*'  # Trigger on version tags like v0.1.0, v1.0.0, etc.
+      - 'v*.*.*'  # Only trigger on semver tags like v1.2.3
 
 env:
   REGISTRY: ghcr.io
