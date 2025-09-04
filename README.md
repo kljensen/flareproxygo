@@ -9,9 +9,24 @@ FlareProxy Go is a transparent HTTP proxy adapter that seamlessly forwards clien
 - Multi-architecture support (amd64/arm64)
 - Compatible with the original FlareProxy
 
-## Build
+## Installation
 
-FlareProxy Go is shipped as an OCI container image and can be built using the [Dockerfile](Dockerfile) provided in the repository root.
+### Using Pre-built Docker Images
+
+FlareProxy Go is available as a pre-built container image from GitHub Container Registry:
+
+```bash
+docker pull ghcr.io/kljensen/flareproxygo:latest
+```
+
+Available tags:
+- `latest` - Latest stable release
+- `v0.1.0`, `v0.2.0`, etc. - Specific version tags
+- `0.1`, `0.2`, etc. - Major.minor version tags
+
+### Build from Source
+
+FlareProxy Go can be built using the [Dockerfile](Dockerfile) provided in the repository root:
 
 ```bash
 docker build -t flareproxygo .
