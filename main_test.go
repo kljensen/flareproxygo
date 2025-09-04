@@ -195,3 +195,123 @@ func TestProxyHandler_ConnectionError(t *testing.T) {
 		t.Errorf("Expected application/json Content-Type, got %v", rr.Header().Get("Content-Type"))
 	}
 }
+
+func TestDirectHandler_ServeHTTP(t *testing.T) {
+	// Create a mock FlareSolverr server
+	mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Verify the request is correct
+		if r.Method != "POST" {
+			t.Errorf("Expected POST request, got %s", r.Method)
+		}
+		
+		// Decode the request to verify it's correct
+		var req FlareSolverrRequest
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			t.Errorf("Failed to decode request: %v", err)
+		}
+
+		// Check for special test cases
+		if strings.Contains(req.URL, "error-test") {
+			response := FlareSolverrResponse{
+				Status:  "error",
+				Message: "Test error message",
+			}
+			json.NewEncoder(w).Encode(response)
+			return
+		}
+
+		// Return a successful response
+		response := FlareSolverrResponse{
+			Status: "ok",
+		}
+		response.Solution.Response = "<html><body>Direct mode response</body></html>"
+		response.Solution.Status = 200
+		json.NewEncoder(w).Encode(response)
+	}))
+	defer mockServer.Close()
+
+	// Create handler with mock server URL
+	os.Setenv("FLARESOLVERR_URL", mockServer.URL)
+	defer os.Unsetenv("FLARESOLVERR_URL")
+	handler := NewDirectHandler()
+
+	tests := []struct {
+		name        string
+		method      string
+		path        string
+		wantStatus  int
+		wantContent string
+		wantError   bool
+	}{
+		{
+			name:        "successful direct GET request",
+			method:      "GET",
+			path:        "/example.com/test/path",
+			wantStatus:  http.StatusOK,
+			wantContent: "Direct mode response",
+			wantError:   false,
+		},
+		{
+			name:        "direct request with query params",
+			method:      "GET",
+			path:        "/example.com/search?q=test&page=1",
+			wantStatus:  http.StatusOK,
+			wantContent: "Direct mode response",
+			wantError:   false,
+		},
+		{
+			name:        "direct request domain only",
+			method:      "GET",
+			path:        "/example.com",
+			wantStatus:  http.StatusOK,
+			wantContent: "Direct mode response",
+			wantError:   false,
+		},
+		{
+			name:        "direct POST request",
+			method:      "POST",
+			path:        "/example.com/api/endpoint",
+			wantStatus:  http.StatusOK,
+			wantContent: "Direct mode response",
+			wantError:   false,
+		},
+		{
+			name:        "invalid format - no domain",
+			method:      "GET",
+			path:        "/",
+			wantStatus:  http.StatusBadRequest,
+			wantContent: "Invalid URL format",
+			wantError:   true,
+		},
+		{
+			name:        "error from FlareSolverr",
+			method:      "GET",
+			path:        "/error-test.com/page",
+			wantStatus:  http.StatusInternalServerError,
+			wantContent: "Test error message",
+			wantError:   true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Create request
+			req := httptest.NewRequest(tt.method, tt.path, nil)
+			rr := httptest.NewRecorder()
+
+			// Handle request
+			handler.ServeHTTP(rr, req)
+
+			// Check status code
+			if rr.Code != tt.wantStatus {
+				t.Errorf("ServeHTTP() status = %v, want %v", rr.Code, tt.wantStatus)
+			}
+
+			// Check response content
+			responseBody := rr.Body.String()
+			if !strings.Contains(responseBody, tt.wantContent) {
+				t.Errorf("ServeHTTP() body = %v, want to contain %v", responseBody, tt.wantContent)
+			}
+		})
+	}
+}
